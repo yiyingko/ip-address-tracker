@@ -2,6 +2,7 @@ import './App.css';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useState, useRef } from 'react';
+import { Marker } from 'leaflet';
 
 type IpData = {
   ip: string;
@@ -22,6 +23,7 @@ function App() {
   const [searchInput, setSearchInput] = useState('');
   const [ipData, setIpData] = useState<IpData | null>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
   const handleSearch = async (ip: string) => {
     const response = await fetch(
@@ -39,6 +41,7 @@ function App() {
 
   useEffect(() => {
     const map = L.map('map').setView([51.505, -0.09], 13);
+    const marker = new Marker([51.505, -0.09]);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -46,11 +49,15 @@ function App() {
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
 
+    marker.addTo(map);
+
     mapRef.current = map;
+    markerRef.current = marker;
 
     return () => {
       map.remove();
       mapRef.current = null;
+      markerRef.current = null;
     };
   }, []);
 
@@ -61,6 +68,7 @@ function App() {
     const lng = ipData.location.lng;
 
     mapRef.current?.setView([lat, lng], 13);
+    markerRef.current?.setLatLng([lat, lng]);
   }, [ipData]);
 
   return (
